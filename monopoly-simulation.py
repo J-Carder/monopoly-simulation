@@ -1,17 +1,14 @@
 import random
-import time
-import numpy as np
-import matplotlib.pyplot as plt
 import plot
 
 # 1 run is one time around the board
 # 1 roll is one roll of the dice
-# TODO organized data (plot, graph, heat map, etc. with matplotb
+# TODO more data!!! (pie chart, heat map?) also create graph for all of a set, clean up!!, clean up plot too!!
 
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, rolls, rand_start=False):
 
         self.triple_count = 0
 
@@ -22,11 +19,13 @@ class Game:
         self.roll = 0
 
         # Place on the board (Default is 0 (GO) or set to random to get different results)
-        self.move = 0
-
+        if rand_start:
+            self.move = random.randint(0, 40)
+        else:
+            self.move = 0
 
         # times to run/roll for
-        self.rolls_for = 100000
+        self.rolls_for = rolls
 
         self.places_landed = 0
 
@@ -35,7 +34,6 @@ class Game:
 
         # running total of rolls/runs
         self.total_rolls = 0
-
 
         self.card_seq_chest = random.sample(range(0, 16), 16)
         self.card_seq_chance = random.sample(range(0, 16), 16)
@@ -62,7 +60,7 @@ class Game:
         self.places_dict = {}
         for i in range(0, 40):
 
-            #self.places_dict[self.places[i]] = [i, 0]
+            # self.places_dict[self.places[i]] = [i, 0]
 
             # format: places_dict[space number] = [name, number times landed on]
             self.places_dict[i] = [self.places[i], 0]
@@ -101,7 +99,7 @@ class Game:
 
         for key, value in self.places_dict.items():
 
-            #print(key, value[0])
+            # print(key, value[0])
 
             self.value_list.append([(value[1]/self.total_rolls) * 100, value[0]])
 
@@ -191,7 +189,6 @@ class Game:
 
         self.places_landed += 1
 
-
     def reset_cards(self):
 
         if len(self.card_seq_chest) <= 0:
@@ -212,60 +209,12 @@ class Game:
 
         self.show_sim()
 
-monopoly = Game()
+
+monopoly = Game(100000, rand_start=True)
 
 monopoly.run()
 
-
 print((monopoly.total_dub_jails / monopoly.total_rolls) * 100)
-######################################################################################################################################################
-
-
-
-
-# class Plot:
-#
-#     def __init__(self):
-#
-#         self.fig, self.ax = plt.subplots()
-#
-#         self.percents = [x / 4 for x in range(0, 17)]
-#         self.ax.set_yticks(self.percents)
-#
-#         self.percentages = []
-#         for value in monopoly.show_sim_live()[1]:
-#             self.percentages.append(value / sum(monopoly.prop_probability) * 100)
-#
-#         #percentages.sort(reverse=True)
-#
-#         self.x = np.arange(len(self.percentages))  # the x locations for the groups
-#
-#         self.bar = self.ax.bar(self.x, self.percentages, 0.6, color='b', edgecolor='#000000')
-#
-#         # add some text for labels, title and axes ticks
-#         self.ax.set_ylabel('Probability (percent)')
-#         self.ax.set_title('Monopoly Property Probabilities')
-#         self.ax.set_xticks(self.x)
-#         self.ax.set_xticklabels(monopoly.show_sim_live()[0], rotation=35, ha='right', size=7)
-#
-#     def custom_colors(self, x, color, hatch=''):
-#         for column in x:
-#             self.bar[column].set_color(color)
-#             self.bar[column].set_edgecolor('black')
-#             self.bar[column].set_hatch(hatch)
-#
-#     def autolabel(self, rects):
-#         """
-#         Attach a text label above each bar displaying its height
-#         """
-#         for rect in rects:
-#             height = rect.get_height()
-#             self.ax.text(rect.get_x() + rect.get_width()/2., 1.0*height,
-#                     round(height, 2),
-#                     ha='center', va='bottom', size=8)
-#
-#     def show(self):
-#         plt.show()
 
 big_data = plot.Plot(monopoly)
 
@@ -293,76 +242,6 @@ big_data.custom_colors([26, 27, 29], '#fef200')
 big_data.custom_colors([31, 32, 34], '#1fb25a')
 big_data.custom_colors([37, 39], '#0072bb')
 
+big_data.labels("Probability (percentage)", "Monopoly Property Probabilities", 45, 7)
+
 big_data.show()
-
-
-
-######################################################################################################################################################
-# print((monopoly.total_dub_jails / monopoly.total_rolls) * 100)
-#
-#
-# fig, ax = plt.subplots()
-#
-# percentages = []
-# for value in monopoly.show_sim_live()[1]:
-#     percentages.append(value / sum(monopoly.prop_probability) * 100)
-#
-# #percentages.sort(reverse=True)
-#
-# x = np.arange(len(percentages))  # the x locations for the groups
-#
-# bar = ax.bar(x, percentages, 0.6, color='b', edgecolor='#000000')
-#
-# # add some text for labels, title and axes ticks
-# ax.set_ylabel('Probability (percent)')
-# ax.set_title('Monopoly Property Probabilities')
-# ax.set_xticks(x)
-# ax.set_xticklabels(monopoly.show_sim_live()[0], rotation=35, ha='right', size=7)
-#
-#
-# def custom_colors(x, color, hatch=''):
-#     for column in x:
-#         bar[column].set_color(color)
-#         bar[column].set_edgecolor('black')
-#         bar[column].set_hatch(hatch)
-#
-#
-# custom_colors([0], 'g')
-#
-# custom_colors([5, 15, 25, 35], 'black')
-# custom_colors([12, 28], 'grey')
-# custom_colors([2, 17, 33], '#03b1f8', hatch='/')
-# custom_colors([7, 22, 36], 'grey', hatch='/')
-# custom_colors([4, 38], '#ffffff', hatch='/')
-# custom_colors([20], '#ef1722')
-# custom_colors([30], '#a95b00')
-# custom_colors([40], '#a95b00')
-# custom_colors([10], '#a95b00')
-#
-# custom_colors([1, 3], '#955436')
-# custom_colors([6, 8, 9], '#aae0fa')
-# custom_colors([11, 13, 14], '#d93a96')
-# custom_colors([16, 18, 19], '#f7941d')
-# custom_colors([21, 23, 24], '#ed1b24')
-# custom_colors([26, 27, 29], '#fef200')
-# custom_colors([31, 32, 34], '#1fb25a')
-# custom_colors([37, 39], '#0072bb')
-#
-# def autolabel(rects):
-#     """
-#     Attach a text label above each bar displaying its height
-#     """
-#     for rect in rects:
-#         height = rect.get_height()
-#         ax.text(rect.get_x() + rect.get_width()/2., 1.0*height,
-#                 round(height, 2),
-#                 ha='center', va='bottom', size=8)
-#
-#
-# autolabel(bar)
-#
-# percents = [x/4 for x in range(0, 17)]
-# ax.set_yticks(percents)
-#
-# plt.show()
-#
