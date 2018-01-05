@@ -1,5 +1,5 @@
 import random
-import plot
+from plot import Plot as new_plot
 
 # 1 run is one time around the board
 # 1 roll is one roll of the dice
@@ -29,9 +29,6 @@ class Game:
 
         self.places_landed = 0
 
-        # interactive
-        # self.run_for = int(input("How many tests would you like to run? "))
-
         # running total of rolls/runs
         self.total_rolls = 0
 
@@ -44,11 +41,12 @@ class Game:
         self.total_dub_jails = 0
 
         self.key_list = []
+        self.value_list = []
 
         self.prop_names = []
         self.prop_probability = []
-
-        self.value_list = []
+        self.prop_set_probability = []
+        self.prop_set_probability_avg = []
 
         # names of places on the board
         self.places = ['GO', 'Mediterranean', 'Community Chest', 'Baltic', 'Income Tax', 'Reading Railroad', 'Oriental', 'Chance', 'Vermont', 'Connecticut','Just Visiting',
@@ -83,42 +81,40 @@ class Game:
         self.places_landed += 1
 
     def check_reset(self):
-        """Make sure move number doesn't exceed amount of tiles on board (38), add to runs and check if on action
-        space (jail, chance, community chest) then move accordingly"""
+        """make sure players position doesn't exceed tiles on board, add to places, and check if player lands on Go
+        to jail"""
 
         if self.move >= 40:
             self.move -= 40
 
         self.places_dict[self.move][1] += 1
 
-        if self.move == 29:
+        if self.move == 30:
             self.go_to(jail=True)
 
-    def show_sim(self):
-        """Show data from simulation"""
-
-        for key, value in self.places_dict.items():
-
-            # print(key, value[0])
-
-            self.value_list.append([(value[1]/self.total_rolls) * 100, value[0]])
-
-        self.value_list.sort(reverse=True)
-        print(self.value_list, len(self.value_list))
-
-    def show_sim_live(self):
+    def sim_data(self):
         """Show sim while running"""
 
-        # for key, value in self.places_dict.items():
-        #     if key == 10 or key == 29 or key == '10a' or key == 0:
-        #         print(value[0], value[1])
-        #         return value[0], value[1]
         self.prop_probability = []
+        self.prop_set_probability = []
+        self.prop_set_probability_avg = []
+
         for key, value in self.places_dict.items():
             self.prop_names.append(value[0])
             self.prop_probability.append(value[1])
 
-        return [self.prop_names, self.prop_probability]
+        prop_set = [[1, 3], [6, 8, 9], [11, 13, 14], [16, 18, 19], [21, 23, 24], [26, 27, 29], [31, 32, 34],
+                    [37, 39], [5, 15, 25, 35], [12, 28], [12, 22, 36], [2, 17, 33]]
+
+        for prop_group in prop_set:
+            sum_props = 0
+            for prop in prop_group:
+                sum_props += self.prop_probability[prop]
+            #print(sum_props, self.prop_set_probability)
+            self.prop_set_probability.append(sum_props)
+            self.prop_set_probability_avg.append(sum_props / len(prop_group))
+
+        return [self.prop_names, self.prop_probability, self.prop_set_probability, self.prop_set_probability_avg]
 
     def check_triple(self):
         """Check if player gets three doubles in a row (going to jail)"""
@@ -134,6 +130,7 @@ class Game:
             self.total_dub_jails += 1
 
     def chance(self):
+        """draws a card from chance and executes action on card"""
 
         if self.move == 7 or self.move == 22 or self.move == 36:
 
@@ -167,6 +164,7 @@ class Game:
                     self.go_to(tile_number=5)
 
     def community_chest(self):
+        """draws a card from community chest and executes action on card"""
 
         if self.move == 2 or self.move == 17 or self.move == 33:
 
@@ -178,6 +176,7 @@ class Game:
                 self.go_to()
 
     def go_to(self, tile_number=0, jail=False):
+        """goes to tile number specified"""
 
         if jail:
             self.move = '10a'
@@ -190,6 +189,7 @@ class Game:
         self.places_landed += 1
 
     def reset_cards(self):
+        """checks if there are less than 1 cards in chance/community chest pile and 'reshuffles' if true"""
 
         if len(self.card_seq_chest) <= 0:
             self.card_seq_chest = random.sample(range(0, 16), 16)
@@ -198,50 +198,62 @@ class Game:
             self.card_seq_chance = random.sample(range(0, 16), 16)
 
     def run(self):
+        """run simulation"""
+
         while self.total_rolls < self.rolls_for:
             self.roll_die()
             self.check_reset()
-            print(monopoly.total_rolls / (self.rolls_for / 100))
             self.check_triple()
             self.reset_cards()
             self.community_chest()
             self.chance()
+            print(monopoly.total_rolls / (self.rolls_for / 100))
 
-        self.show_sim()
+        #print(self.sim_data())
 
 
-monopoly = Game(100000, rand_start=True)
+monopoly = Game(2500000, rand_start=True)
 
 monopoly.run()
 
-print((monopoly.total_dub_jails / monopoly.total_rolls) * 100)
+colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa', 'grey', '#aae0fa', '#aae0fa',
+               '#a95b00', '#d93a96', 'grey', '#d93a96', '#d93a96', 'black', '#f7941d', '#03b1f8', '#f7941d', '#f7941d',
+               '#ef1722', '#ed1b24', 'grey', '#ed1b24', '#ed1b24', 'black', '#fef200', '#fef200', 'grey', '#fef200',
+               '#a95b00', '#1fb25a', '#1fb25a', '#03b1f8', '#1fb25a', 'black', 'grey', '#0072bb', 'white', '#0072bb',
+               '#a95b00']
 
-big_data = plot.Plot(monopoly)
+hatch_data = [2, 17, 33, 7, 22, 36, 4, 38, '//']
+
+prop_prob = new_plot([x / 4 for x in range(0, 17)], [value / sum(monopoly.prop_probability) * 100 for value in
+                                                     monopoly.sim_data()[1]], bar_color=colors_list, hatch_data=hatch_data, autolabel=True)
+
+prop_prob.labels("Monopoly Property Probabilities", y_label="Probability (%)", rotation=45, size=9,
+                 x_tick_names=monopoly.sim_data()[0], ha='right')
+
+prop_prob.autolabel(8)
+
+prop_prob.show()
 
 
-big_data.autolabel(big_data.bar)
+colors_list = ['#955436', '#aae0fa', '#d93a96', '#f7941d', '#ed1b24', '#fef200', '#1fb25a', '#0072bb', 'black', 'grey',
+               'grey', '#03b1f8']
 
-big_data.custom_colors([0], 'g')
+hatch_data = [10, 11, '//']
 
-big_data.custom_colors([5, 15, 25, 35], 'black')
-big_data.custom_colors([12, 28], 'grey')
-big_data.custom_colors([2, 17, 33], '#03b1f8', hatch='/')
-big_data.custom_colors([7, 22, 36], 'grey', hatch='/')
-big_data.custom_colors([4, 38], '#ffffff', hatch='/')
-big_data.custom_colors([20], '#ef1722')
-big_data.custom_colors([30], '#a95b00')
-big_data.custom_colors([40], '#a95b00')
-big_data.custom_colors([10], '#a95b00')
+x_labels = ['Browns', 'Light blues', 'Pinks', 'Oranges', 'Reds', 'Yellows', 'Greens', 'Dark blues', 'Railroads',
+            'Utilities', 'Chance', 'Community Chest']
 
-big_data.custom_colors([1, 3], '#955436')
-big_data.custom_colors([6, 8, 9], '#aae0fa')
-big_data.custom_colors([11, 13, 14], '#d93a96')
-big_data.custom_colors([16, 18, 19], '#f7941d')
-big_data.custom_colors([21, 23, 24], '#ed1b24')
-big_data.custom_colors([26, 27, 29], '#fef200')
-big_data.custom_colors([31, 32, 34], '#1fb25a')
-big_data.custom_colors([37, 39], '#0072bb')
+for i in range(0, 2):
+    prop_set_prob = new_plot([x / 2 for x in range(0, int(25 / ((2 * i) + 1)))], [value / sum(monopoly.prop_probability)
+                    * 100 for value in monopoly.sim_data()[i+2]], autolabel=True, bar_color=colors_list,
+                    hatch_data=hatch_data, width=0.6)
 
-big_data.labels("Probability (percentage)", "Monopoly Property Probabilities", 45, 7)
+    title = 'Monopoly Probability of Landing on sets'
+    if i == 1:
+        title += " (Average)"
+    prop_set_prob.labels(title, y_label='Probability (%)',
+                         x_tick_names=x_labels, rotation=45, ha='right', size=10)
 
-big_data.show()
+    prop_set_prob.autolabel(10, dec_places=3)
+
+    prop_set_prob.show()

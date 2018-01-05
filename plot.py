@@ -6,46 +6,42 @@ import matplotlib.pyplot as plt
 
 class Plot:
 
-    def __init__(self, class_name):
+    def __init__(self, y_values, x_values, bar_color='b', hatch_data='', autolabel=False, width=0.6):
 
         self.fig, self.ax = plt.subplots()
 
-        self.class_name = class_name
+        if y_values is not 'auto':
+            self.y_values = y_values
+            self.ax.set_yticks(self.y_values)
 
-        self.percents = [x / 4 for x in range(0, 17)]
-        self.ax.set_yticks(self.percents)
+        self.x_values = x_values
 
-        self.percentages = []
-        for value in class_name.show_sim_live()[1]:
-            self.percentages.append(value / sum(class_name.prop_probability) * 100)
+        plt.ylim(ymax=max(y_values))
 
-        # percentages.sort(reverse=True)
+        self.x_places = np.arange(len(self.x_values))  # the x locations for the groups
+        self.ax.set_xticks(self.x_places)
 
-        self.x = np.arange(len(self.percentages))  # the x locations for the groups
+        self.bar = self.ax.bar(self.x_places, self.x_values, width, color=bar_color, edgecolor='black')
 
-        self.bar = self.ax.bar(self.x, self.percentages, 0.6, color='b', edgecolor='#000000')
+        for bar in hatch_data[:-1]:
+            self.bar[bar].set_hatch(hatch_data[-1])
 
-    def labels(self, x_label, title, rot, size):
+    def labels(self, title, y_label='', x_label='', x_tick_names='', rotation=0, size=10, ha='center'):
         # add some text for labels, title and axes ticks
-        self.ax.set_ylabel(x_label)
+        self.ax.set_ylabel(y_label)
+        self.ax.set_xlabel(x_label)
         self.ax.set_title(title)
-        self.ax.set_xticks(self.x)
-        self.ax.set_xticklabels(self.class_name.show_sim_live()[0], rotation=rot, ha='right', size=size)
+        self.ax.set_xticklabels(x_tick_names, rotation=rotation, ha=ha, size=size)
 
-    def custom_colors(self, x, color, hatch=''):
-        for column in x:
-            self.bar[column].set_color(color)
-            self.bar[column].set_edgecolor('black')
-            self.bar[column].set_hatch(hatch)
-
-    def autolabel(self, rects):
+    def autolabel(self, size, dec_places=2):
         """
         Attach a text label above each bar displaying its height
         """
-        for rect in rects:
+        for rect in self.bar:
             height = rect.get_height()
-            self.ax.text(rect.get_x() + rect.get_width()/2., 1.0*height, round(height, 2),
-                         ha='center', va='bottom', size=8)
+            self.ax.text(rect.get_x() + rect.get_width()/2., 1.005*height, round(height, dec_places),
+                         ha='center', va='bottom', size=size)
 
     def show(self):
+        plt.tight_layout()
         plt.show()
