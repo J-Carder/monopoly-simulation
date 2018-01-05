@@ -1,9 +1,10 @@
 import random
 from plot import Plot as new_plot
+from plot import Pie as new_pie
 
 # 1 run is one time around the board
 # 1 roll is one roll of the dice
-# TODO more data!!! (pie chart, heat map?) also create graph for all of a set, clean up!!, clean up plot too!!
+# TODO more data!!! (pie chart, heat map?)
 
 
 class Game:
@@ -95,6 +96,7 @@ class Game:
     def sim_data(self):
         """Show sim while running"""
 
+        self.prop_names = []
         self.prop_probability = []
         self.prop_set_probability = []
         self.prop_set_probability_avg = []
@@ -110,7 +112,7 @@ class Game:
             sum_props = 0
             for prop in prop_group:
                 sum_props += self.prop_probability[prop]
-            #print(sum_props, self.prop_set_probability)
+            # print(sum_props, self.prop_set_probability)
             self.prop_set_probability.append(sum_props)
             self.prop_set_probability_avg.append(sum_props / len(prop_group))
 
@@ -209,10 +211,10 @@ class Game:
             self.chance()
             print(monopoly.total_rolls / (self.rolls_for / 100))
 
-        #print(self.sim_data())
+        # print(self.sim_data())
 
 
-monopoly = Game(2500000, rand_start=True)
+monopoly = Game(100000, rand_start=True)
 
 monopoly.run()
 
@@ -225,14 +227,22 @@ colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa'
 hatch_data = [2, 17, 33, 7, 22, 36, 4, 38, '//']
 
 prop_prob = new_plot([x / 4 for x in range(0, 17)], [value / sum(monopoly.prop_probability) * 100 for value in
-                                                     monopoly.sim_data()[1]], bar_color=colors_list, hatch_data=hatch_data, autolabel=True)
+                                                     monopoly.sim_data()[1]], bar_color=colors_list,
+                     hatch_data=hatch_data, autolabel=True)
 
 prop_prob.labels("Monopoly Property Probabilities", y_label="Probability (%)", rotation=45, size=9,
                  x_tick_names=monopoly.sim_data()[0], ha='right')
 
 prop_prob.autolabel(8)
-
 prop_prob.show()
+
+hatch_data[8] = '--'
+
+for i in range(0, 4):
+    colors_list[i*10 +5] = '#444444'
+
+pie_sim = new_pie([value / sum(monopoly.prop_probability) * 100 for value in monopoly.sim_data()[1]], monopoly.sim_data()[0], colors_list)
+pie_sim.show(autopct='%1.1f%%', pd=0.9, ld=1.05, hatch_data=hatch_data)
 
 
 colors_list = ['#955436', '#aae0fa', '#d93a96', '#f7941d', '#ed1b24', '#fef200', '#1fb25a', '#0072bb', 'black', 'grey',
@@ -254,6 +264,12 @@ for i in range(0, 2):
     prop_set_prob.labels(title, y_label='Probability (%)',
                          x_tick_names=x_labels, rotation=45, ha='right', size=10)
 
-    prop_set_prob.autolabel(10, dec_places=3)
+    prop_set_prob.autolabel(10, dec_places=4)
 
     prop_set_prob.show()
+
+    if i == 0:
+        colors_list[8] = '#444444'
+        pie_sim = new_pie([value / sum(monopoly.prop_probability) * 100 for value in monopoly.sim_data()[2]], x_labels, colors_list)
+        pie_sim.show(autopct='%1.1f%%', pd=0.75, ld=1.05, hatch_data=hatch_data)
+        

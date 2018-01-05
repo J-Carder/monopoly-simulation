@@ -1,7 +1,7 @@
 import numpy as np
+import matplotlib
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
-
-# TODO make more accessible for more than just one plot! refactor!!!!
 
 
 class Plot:
@@ -44,4 +44,26 @@ class Plot:
 
     def show(self):
         plt.tight_layout()
+        plt.show()
+
+
+class Pie:
+
+    def __init__(self, sizes, labels, colors):
+        # Data to plot
+        self.labels = labels
+        self.sizes = sizes
+        self.colors = colors
+        #self.explode = [x/x / 100 for x in range(1, 13)]
+
+    def show(self, autopct='%1.2f%%', pd=0.5, ld=1.1, hatch_data=''):
+
+        # Plot
+        piechart = plt.pie(self.sizes, labels=self.labels, colors=self.colors,
+                           autopct=autopct, startangle=-90, pctdistance=pd, labeldistance=ld)[0]
+
+        for wedge in hatch_data[:-1]:
+            piechart[wedge].set_hatch(hatch_data[-1])
+
+        plt.axis('equal')
         plt.show()
