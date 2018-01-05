@@ -1,10 +1,12 @@
 import random
 from plot import Plot as new_plot
 from plot import Pie as new_pie
+import csv
+import time
 
-# 1 run is one time around the board
-# 1 roll is one roll of the dice
-# TODO more data!!! (pie chart, heat map?)
+start_time = time.time()
+
+# TODO more data!!! (heat map?), add rents (single prop, 0-4 houses, hotels?)
 
 
 class Game:
@@ -45,9 +47,9 @@ class Game:
         self.value_list = []
 
         self.prop_names = []
-        self.prop_probability = []
-        self.prop_set_probability = []
-        self.prop_set_probability_avg = []
+        self.prop_landed_on = []
+        self.prop_landed_on_combined = []
+        self.prop_landed_on_combined_avg = []
 
         # names of places on the board
         self.places = ['GO', 'Mediterranean', 'Community Chest', 'Baltic', 'Income Tax', 'Reading Railroad', 'Oriental', 'Chance', 'Vermont', 'Connecticut','Just Visiting',
@@ -56,17 +58,17 @@ class Game:
                        'Pacific', 'North Carolina', 'Community Chest','Pennsylvania','Short Line', 'Chance', 'Park Place', 'Luxury Tax', 'Boardwalk']
 
         # create dictionary for name, space number and number times landed on
-        self.places_dict = {}
+        self.property_data = {}
         for i in range(0, 40):
 
             # self.places_dict[self.places[i]] = [i, 0]
 
             # format: places_dict[space number] = [name, number times landed on]
-            self.places_dict[i] = [self.places[i], 0]
+            self.property_data[i] = [self.places[i], 0]
 
         # create places outside for loop, for ex. jail and just visiting are the same tile # but have two different
         # conditions
-        self.places_dict['10a'] = ['Jail', 0]
+        self.property_data['10a'] = ['Jail', 0]
 
     def roll_die(self):
         """Roll two pseudo-random 'dice' and move that number of spaces"""
@@ -88,22 +90,22 @@ class Game:
         if self.move >= 40:
             self.move -= 40
 
-        self.places_dict[self.move][1] += 1
+        self.property_data[self.move][1] += 1
 
         if self.move == 30:
             self.go_to(jail=True)
 
     def sim_data(self):
-        """Show sim while running"""
+        """Generate data from simulation"""
 
         self.prop_names = []
-        self.prop_probability = []
-        self.prop_set_probability = []
-        self.prop_set_probability_avg = []
+        self.prop_landed_on = []
+        self.prop_landed_on_combined = []
+        self.prop_landed_on_combined_avg = []
 
-        for key, value in self.places_dict.items():
+        for key, value in self.property_data.items():
             self.prop_names.append(value[0])
-            self.prop_probability.append(value[1])
+            self.prop_landed_on.append(value[1])
 
         prop_set = [[1, 3], [6, 8, 9], [11, 13, 14], [16, 18, 19], [21, 23, 24], [26, 27, 29], [31, 32, 34],
                     [37, 39], [5, 15, 25, 35], [12, 28], [12, 22, 36], [2, 17, 33]]
@@ -111,12 +113,12 @@ class Game:
         for prop_group in prop_set:
             sum_props = 0
             for prop in prop_group:
-                sum_props += self.prop_probability[prop]
+                sum_props += self.prop_landed_on[prop]
             # print(sum_props, self.prop_set_probability)
-            self.prop_set_probability.append(sum_props)
-            self.prop_set_probability_avg.append(sum_props / len(prop_group))
+            self.prop_landed_on_combined.append(sum_props)
+            self.prop_landed_on_combined_avg.append(sum_props / len(prop_group))
 
-        return [self.prop_names, self.prop_probability, self.prop_set_probability, self.prop_set_probability_avg]
+        return [self.prop_names, self.prop_landed_on, self.prop_landed_on_combined, self.prop_landed_on_combined_avg]
 
     def check_triple(self):
         """Check if player gets three doubles in a row (going to jail)"""
@@ -182,11 +184,11 @@ class Game:
 
         if jail:
             self.move = '10a'
-            self.places_dict[self.move][1] += 1
+            self.property_data[self.move][1] += 1
             self.move = 10
         else:
             self.move = tile_number
-            self.places_dict[self.move][1] += 1
+            self.property_data[self.move][1] += 1
 
         self.places_landed += 1
 
@@ -214,10 +216,13 @@ class Game:
         # print(self.sim_data())
 
 
-monopoly = Game(100000, rand_start=True)
-
+monopoly = Game(200000000, rand_start=True)
 monopoly.run()
+print("--- %s seconds ---" % (time.time() - start_time))
 
+### PLOTS ###
+
+## plot 1 (probability of landing on each property) ##
 colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa', 'grey', '#aae0fa', '#aae0fa',
                '#a95b00', '#d93a96', 'grey', '#d93a96', '#d93a96', 'black', '#f7941d', '#03b1f8', '#f7941d', '#f7941d',
                '#ef1722', '#ed1b24', 'grey', '#ed1b24', '#ed1b24', 'black', '#fef200', '#fef200', 'grey', '#fef200',
@@ -226,7 +231,7 @@ colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa'
 
 hatch_data = [2, 17, 33, 7, 22, 36, 4, 38, '//']
 
-prop_prob = new_plot([x / 4 for x in range(0, 17)], [value / sum(monopoly.prop_probability) * 100 for value in
+prop_prob = new_plot([x / 4 for x in range(0, 17)], [value / sum(monopoly.prop_landed_on) * 100 for value in
                                                      monopoly.sim_data()[1]], bar_color=colors_list,
                      hatch_data=hatch_data, autolabel=True)
 
@@ -236,14 +241,16 @@ prop_prob.labels("Monopoly Property Probabilities", y_label="Probability (%)", r
 prop_prob.autolabel(8)
 prop_prob.show()
 
+## pie 1 (probability of landing on each property) ##
 hatch_data[8] = '--'
 
 for i in range(0, 4):
     colors_list[i*10 +5] = '#444444'
 
-pie_sim = new_pie([value / sum(monopoly.prop_probability) * 100 for value in monopoly.sim_data()[1]], monopoly.sim_data()[0], colors_list)
+pie_sim = new_pie([value / sum(monopoly.prop_landed_on) * 100 for value in monopoly.sim_data()[1]], monopoly.sim_data()[0], colors_list)
 pie_sim.show(autopct='%1.1f%%', pd=0.9, ld=1.05, hatch_data=hatch_data)
 
+## plots 2, pie 2 and plot 3 ##
 
 colors_list = ['#955436', '#aae0fa', '#d93a96', '#f7941d', '#ed1b24', '#fef200', '#1fb25a', '#0072bb', 'black', 'grey',
                'grey', '#03b1f8']
@@ -254,7 +261,7 @@ x_labels = ['Browns', 'Light blues', 'Pinks', 'Oranges', 'Reds', 'Yellows', 'Gre
             'Utilities', 'Chance', 'Community Chest']
 
 for i in range(0, 2):
-    prop_set_prob = new_plot([x / 2 for x in range(0, int(25 / ((2 * i) + 1)))], [value / sum(monopoly.prop_probability)
+    prop_set_prob = new_plot([x / 2 for x in range(0, int(25 / ((2 * i) + 1)))], [value / sum(monopoly.prop_landed_on)
                     * 100 for value in monopoly.sim_data()[i+2]], autolabel=True, bar_color=colors_list,
                     hatch_data=hatch_data, width=0.6)
 
@@ -270,6 +277,36 @@ for i in range(0, 2):
 
     if i == 0:
         colors_list[8] = '#444444'
-        pie_sim = new_pie([value / sum(monopoly.prop_probability) * 100 for value in monopoly.sim_data()[2]], x_labels, colors_list)
+        pie_sim = new_pie([value / sum(monopoly.prop_landed_on) * 100 for value in monopoly.sim_data()[2]], x_labels, colors_list)
         pie_sim.show(autopct='%1.1f%%', pd=0.75, ld=1.05, hatch_data=hatch_data)
-        
+
+
+
+## export data to *.csv files ##
+
+data = [value / sum(monopoly.prop_landed_on) * 100 for value in monopoly.sim_data()[1]]
+csvfile = "csv/property_probabilities.csv"
+
+#Assuming res is a flat list
+with open(csvfile, "w") as output:
+    writer = csv.writer(output, lineterminator='\n')
+    for val in data:
+        writer.writerow([val])
+
+data = [value / sum(monopoly.prop_landed_on) * 100 for value in monopoly.sim_data()[2]]
+csvfile = "csv/property_set_probabilities.csv"
+
+#Assuming res is a flat list
+with open(csvfile, "w") as output:
+    writer = csv.writer(output, lineterminator='\n')
+    for val in data:
+        writer.writerow([val])
+
+data = [value / sum(monopoly.prop_landed_on) * 100 for value in monopoly.sim_data()[3]]
+csvfile = "csv/property_set_probabilities_avg.csv"
+
+#Assuming res is a flat list
+with open(csvfile, "w") as output:
+    writer = csv.writer(output, lineterminator='\n')
+    for val in data:
+        writer.writerow([val])
