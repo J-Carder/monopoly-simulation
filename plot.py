@@ -67,3 +67,21 @@ class Pie:
 
         plt.axis('equal')
         plt.show()
+
+
+class Text:
+
+    def __init__(self):
+
+        self.fig, self.ax = plt.subplots()
+
+    def text(self, x, y, text, color, facecolor='none', edgecolor='black', ha='left'):
+
+        self.ax.text(x, y, text, color=color, ha=ha, bbox=dict(facecolor=facecolor, edgecolor=edgecolor))
+
+    def show(self):
+
+        self.ax.set_axis_off()
+        plt.show()
+
+

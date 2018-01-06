@@ -1,6 +1,7 @@
 import random
 from plot import Plot as new_plot
 from plot import Pie as new_pie
+from plot import Text as new_text
 import csv
 import time
 
@@ -52,10 +53,10 @@ class Game:
         self.prop_landed_on_combined_avg = []
 
         # names of places on the board
-        self.places = ['GO', 'Mediterranean', 'Community Chest', 'Baltic', 'Income Tax', 'Reading Railroad', 'Oriental', 'Chance', 'Vermont', 'Connecticut','Just Visiting',
-                       'St. Charles','Electric Company', 'States', 'Virginia', 'Pennsylvania Railroad', 'St. James', 'Community Chest', 'Tennessee', 'New York', 'Free Parking',
-                       'Kentucky','Chance','Indiana', 'Illinois', 'B. & O.', 'Atlantic', 'Ventnor', 'Water Works', 'Marvin Gardens', 'Go to jail',
-                       'Pacific', 'North Carolina', 'Community Chest','Pennsylvania','Short Line', 'Chance', 'Park Place', 'Luxury Tax', 'Boardwalk']
+        self.places = ['GO', 'Mediterranean', 'Community Chest (1)', 'Baltic', 'Income Tax', 'Reading Railroad', 'Oriental', 'Chance (1)', 'Vermont', 'Connecticut','Just Visiting',
+                       'St. Charles','Electric Company', 'States', 'Virginia', 'Pennsylvania Railroad', 'St. James', 'Community Chest (2)', 'Tennessee', 'New York', 'Free Parking',
+                       'Kentucky','Chance (2)','Indiana', 'Illinois', 'B. & O.', 'Atlantic', 'Ventnor', 'Water Works', 'Marvin Gardens', 'Go to jail',
+                       'Pacific', 'North Carolina', 'Community Chest (3)','Pennsylvania','Short Line', 'Chance (3)', 'Park Place', 'Luxury Tax', 'Boardwalk']
 
         # create dictionary for name, space number and number times landed on
         self.property_data = {}
@@ -216,13 +217,64 @@ class Game:
         # print(self.sim_data())
 
 
-monopoly = Game(200000000, rand_start=True)
+monopoly = Game(10000000, rand_start=True)
 monopoly.run()
 print("--- %s seconds ---" % (time.time() - start_time))
 
+colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa', 'grey', '#aae0fa', '#aae0fa',
+               '#a95b00', '#d93a96', 'grey', '#d93a96', '#d93a96', 'black', '#f7941d', '#03b1f8', '#f7941d', '#f7941d',
+               '#ef1722', '#ed1b24', 'grey', '#ed1b24', '#ed1b24', 'black', '#fef200', '#fef200', 'grey', '#fef200',
+               '#a95b00', '#1fb25a', '#1fb25a', '#03b1f8', '#1fb25a', 'black', 'grey', '#0072bb', 'white', '#0072bb',
+               '#a95b00']
+
+
+for i in range(0, len(colors_list)):
+    if i < 4:
+        colors_list[i * 10 + 5] = '#555555'
+
+
+# ranks properties from their probabilities!!
+rank_list = {}  # new dict containing only property names and times landed on
+for key, value in monopoly.property_data.items():
+    rank_list[value[0]] = value[1]  # create list
+
+colors_dict = {}
+i = 0
+for key, value in monopoly.property_data.items():
+    colors_dict[value[1]] = colors_list[i] # create list
+    i += 1
+print(colors_dict)
+ranked = [x for x in sorted(rank_list, key=rank_list.__getitem__, reverse=True)]  # created list from dict with sorted properties according to their probability
+colors_sorted = [value for (key, value) in sorted(colors_dict.items(), reverse=True)]  # created list from dict with sorted properties according to their probability
+print(len(colors_sorted))
+# text_box = new_text(0.5, 0, '\n'.join(ranked[:20]), 'black')  # used .join() for the first time, so useful!!! (and easy!)
+# text_box1 = new_text(0.5, 0, '\n'.join(ranked[20:]), 'black')
+
+text_box = new_text()
+
+x_align = 0.5
+
+x_align_num = 0.02
+
+x_space = -0.2
+
+i = 0
+for color in colors_list:
+    if i < 21:
+
+        text_box.text(x_align - 0.5 - x_align_num, (i - 18) / 17 * -1, str(i + 1) + '.', 'black', ha='right')
+        text_box.text(x_align - 0.5, (i - 18) / 17 * -1, ranked[i], 'black', facecolor=colors_sorted[i])
+    else:
+        print(i)
+        text_box.text(x_align - x_align_num + x_space, (i - 39) / 17 * -1, str(i + 1) + '.', 'black', ha='right')
+        text_box.text(x_align + x_space, (i - 39) / 17 * -1, ranked[i], 'black', facecolor=colors_sorted[i])
+    i+=1
+
+text_box.show()
+
 ### PLOTS ###
 
-## plot 1 (probability of landing on each property) ##
+# plot 1 (probability of landing on each property) ##
 colors_list = ['g', '#955436', '#03b1f8', '#955436', 'white', 'black', '#aae0fa', 'grey', '#aae0fa', '#aae0fa',
                '#a95b00', '#d93a96', 'grey', '#d93a96', '#d93a96', 'black', '#f7941d', '#03b1f8', '#f7941d', '#f7941d',
                '#ef1722', '#ed1b24', 'grey', '#ed1b24', '#ed1b24', 'black', '#fef200', '#fef200', 'grey', '#fef200',
