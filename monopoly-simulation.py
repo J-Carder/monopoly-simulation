@@ -7,7 +7,8 @@ import time
 
 start_time = time.time()
 
-# TODO more data!!! (heat map?), add rents (single prop, 0-4 houses, hotels?)
+# TODO more data!!! (heat map?), add rents (single prop, 0-4 houses, hotels?),
+# TODO MAJOR CLEAN UP!!, use nested lists instead of dictionaries!!
 
 
 class Game:
@@ -221,7 +222,7 @@ class Game:
         # print(self.sim_data())
 
 
-monopoly = Game(10000, rand_start=True)
+monopoly = Game(10000000, rand_start=True)
 monopoly.run()
 print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -246,7 +247,7 @@ if plots:
     rank_list = []  # new dict containing only property names and times landed on
 
     for i, [key, value] in enumerate(monopoly.property_data.items()):
-        rank_list.append([value[0], colors_list[i]])
+        rank_list.append([value[1], value[0], colors_list[i]])
 
     rank_list.sort(reverse=True)
 
@@ -262,10 +263,10 @@ if plots:
         if i < 21:
 
             text_box.text(x_align - 0.5 - x_align_num, (i - 18) / 17 * -1, str(i + 1) + '.', 'black', ha='right')
-            text_box.text(x_align - 0.5, (i - 18) / 17 * -1, rank_list[i][0], 'black', facecolor=rank_list[i][1])
+            text_box.text(x_align - 0.5, (i - 18) / 17 * -1, rank_list[i][1], 'black', facecolor=rank_list[i][2])
         else:
             text_box.text(x_align - x_align_num + x_space, (i - 39) / 17 * -1, str(i + 1) + '.', 'black', ha='right')
-            text_box.text(x_align + x_space, (i - 39) / 17 * -1, rank_list[i][0], 'black', facecolor=rank_list[i][1])
+            text_box.text(x_align + x_space, (i - 39) / 17 * -1, rank_list[i][1], 'black', facecolor=rank_list[i][2])
 
     text_box.show()
 

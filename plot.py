@@ -1,10 +1,12 @@
 import numpy as np
+import matplotlib
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 
 
 class Plot:
 
-    def __init__(self, y_values, x_values, bar_color='b', hatch_data='', width=0.6):
+    def __init__(self, y_values, x_values, bar_color='b', hatch_data='', autolabel=False, width=0.6):
 
         self.fig, self.ax = plt.subplots()
 
@@ -52,7 +54,7 @@ class Pie:
         self.labels = labels
         self.sizes = sizes
         self.colors = colors
-        # self.explode = [x/x / 100 for x in range(1, 13)]
+        #self.explode = [x/x / 100 for x in range(1, 13)]
 
     def show(self, autopct='%1.2f%%', pd=0.5, ld=1.1, hatch_data=''):
 
@@ -64,7 +66,6 @@ class Pie:
             piechart[wedge].set_hatch(hatch_data[-1])
 
         plt.axis('equal')
-        plt.tight_layout()
         plt.show()
 
 
@@ -82,4 +83,5 @@ class Text:
 
         self.ax.set_axis_off()
         plt.show()
+
 
