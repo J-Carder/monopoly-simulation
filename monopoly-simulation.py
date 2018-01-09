@@ -17,6 +17,8 @@ class Game:
 
         self.triple_count = 0
 
+        self.one_tile_per_turn = False
+
         self.d1 = 0
         self.d2 = 0
 
@@ -25,7 +27,7 @@ class Game:
 
         # Place on the board (Default is 0 (GO) or set to random to get different results)
         if rand_start:
-            self.move = random.randint(0, 40)
+            self.move = random.randint(0, 39)
         else:
             self.move = 0
 
@@ -96,7 +98,11 @@ class Game:
         if self.move >= 40:
             self.move -= 40
 
-        self.property_data[self.move][1] += 1
+        if self.one_tile_per_turn:
+            if self.move not in [2, 7, 17, 22, 30, 33, 36]:
+                self.property_data[self.move][1] += 1
+        else:
+            self.property_data[self.move][1] += 1
 
         if self.move == 30:
             self.go_to(jail=True)
@@ -172,6 +178,8 @@ class Game:
                     self.go_to(tile_number=25)
                 else:
                     self.go_to(tile_number=5)
+            elif self.one_tile_per_turn:
+                self.go_to(tile_number=self.move)
 
     def community_chest(self):
         """draws a card from community chest and executes action on card"""
@@ -184,6 +192,8 @@ class Game:
                 self.go_to(jail=True)
             elif self.chest_drawn == 1:
                 self.go_to()
+            elif self.one_tile_per_turn:
+                self.go_to(tile_number=self.move)
 
     def go_to(self, tile_number=0, jail=False):
         """goes to tile number specified"""
@@ -211,23 +221,26 @@ class Game:
         """run simulation"""
 
         while self.total_rolls < self.rolls_for:
-            self.roll_die()
             self.check_reset()
+            self.roll_die()
             self.check_triple()
             self.reset_cards()
             self.community_chest()
             self.chance()
-            print(monopoly.total_rolls / (self.rolls_for / 100))
+
+            # if self.total_rolls / (self.rolls_for / 100) in [25, 50, 75, 100]:  # (the cost of spitting out updated percentages is a 10% increase in run time)
+            #     print(int(self.total_rolls / (self.rolls_for / 100)), '%')
+
 
         # print(self.sim_data())
 
 
-monopoly = Game(10000000, rand_start=True)
+monopoly = Game(100000, rand_start=True)
 monopoly.run()
 print("--- %s seconds ---" % (time.time() - start_time))
 
 
-plots = True
+plots = False
 if plots:
     # ### PLOTS ###
 
